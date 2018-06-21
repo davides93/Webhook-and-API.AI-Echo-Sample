@@ -137,7 +137,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 	var intentName = req.body.queryResult.intent.displayName;
 	console.log("Retrieved Intent name!");
 	switch(intentName) {
-		case "somma":
+		case "Somma Intent":
 			console.log("Intent: somma");
 			var arg1 = req.body.queryResult.parameters.arg1;
 			var arg2 = req.body.queryResult.parameters.arg2;
@@ -145,7 +145,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
 			console.log("Response: "+response);
 			break;
-		case "bp_process_meteo":
+		case "Blue Prism Controller - Meteo":
 			console.log("Intent: bp_process_meteo");
 			var city = req.body.queryResult.parameters.city;
 			var date = req.body.queryResult.parameters.date;
