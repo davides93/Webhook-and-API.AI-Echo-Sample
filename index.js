@@ -10,6 +10,7 @@ var date = "";
 var soap_xml = "";
 var response_json = "";
 var http_options = {}
+var http_res_options = {}
 
 function makeRequest(){
 	var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -31,10 +32,11 @@ function makeRequest(){
 }
 
 var soap_req;
+var post_res;
 
 function makeResponseRequestForGoogle(session, message){
 	response_json = "{\"event\":{\"name\": \"bp_result_event\",\"data\": {\"result_message\": \""+message+"\", \"success_code\": 200}},\"lang\":\"en\",\"sessionId\":\""+session+"\"}";
-	http_options = {
+	http_res_options = {
 		hostname: 'api.dialogflow.com',
 		port: 80,
 		path: 'api/query',
@@ -45,6 +47,26 @@ function makeResponseRequestForGoogle(session, message){
 			'Content-Length': response_json.length
 		}
 	}
+
+	post_res = http.request(http_options, (res) => {
+		console.log(`STATUS: ${res.statusCode}`);
+		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+		res.setEncoding('utf8');
+		res.on('data', (chunk) => {
+			console.log(`BODY: ${chunk}`);
+		});
+
+		res.on('end', () => {
+			console.log('No more data in response.')
+		})
+	});
+
+	post_res.on('error', (e) => {
+		console.log(`problem with request: ${e.message}`);
+	});
+
+	post_res.write(response_json);
+	post_res.end();
 }
 
 function makeAsyncRequestForBP(session){
