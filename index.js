@@ -135,7 +135,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 	// write data to request body
 	console.log("Start APP V2 POST!");
 	var intentName = req.body.queryResult.intent.displayName;
-	console.log("Retrieved Intent name!");
+	console.log("Retrieved Intent name: "+intentName);
 	switch(intentName) {
 		case "Somma Intent":
 			console.log("Intent: somma");
