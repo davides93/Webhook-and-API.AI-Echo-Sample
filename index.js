@@ -92,7 +92,7 @@ restService.use(bodyParser.json());
 restService.post("/SSG_APP_V1", function (req, res) {
 	var speech;
 	// write data to request body
-	var intentName = req.body.result.parameters.intentName;
+	var intentName = req.body.result.metadata.intentName;
 	switch(intentName) {
 		case "somma":
 			var arg1 = req.body.result.parameters.arg1;
@@ -130,7 +130,7 @@ restService.post("/SSG_APP_V1", function (req, res) {
 restService.post("/SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
-	var intentName = req.body.queryResult.parameters.intentName;
+	var intentName = req.body.queryResult.intent.displayName;
 	switch(intentName) {
 		case "somma":
 			var arg1 = req.body.queryResult.parameters.arg1;
