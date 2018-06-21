@@ -88,6 +88,8 @@ function makeAsyncRequestForBP(session){
 		console.log(`problem with request: ${e.message}`);
 	});
 
+	soap_req.write(soap_xml);
+	soap_req.end();
 }
 
 function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
@@ -192,8 +194,6 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			buildSoapForBP(city,date);
 			//makeRequest(); // Test
 			makeAsyncRequestForBP(session);
-			soap_req.write(soap_xml);
-			soap_req.end();
 			response = "Avviato il processo per controllare il meteo";
 			console.log("Response: "+response);
 			break;
