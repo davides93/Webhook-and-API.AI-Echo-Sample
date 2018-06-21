@@ -111,6 +111,8 @@ restService.post("/SSG_APP_V1", function (req, res) {
 			soap_req.end();
 			speech = "Avviato il processo per controllare il meteo";
 			break;
+		case "bp_result_event":
+			break;
 		default:
 			speech = req.body.result && req.body.result.parameters &&
 			req.body.result.parameters.echoText
@@ -131,15 +133,20 @@ restService.post("/SSG_APP_V1", function (req, res) {
 restService.post("/SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
+	console.log("Start APP V2 POST!");
 	var intentName = req.body.queryResult.intent.displayName;
+	console.log("Retrieved Intent name!");
 	switch(intentName) {
 		case "somma":
+			console.log("Intent: somma");
 			var arg1 = req.body.queryResult.parameters.arg1;
 			var arg2 = req.body.queryResult.parameters.arg2;
 			response = parseInt(arg1) + parseInt(arg2);
 			response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
+			console.log("Response: "+response);
 			break;
 		case "bp_process_meteo":
+			console.log("Intent: bp_process_meteo");
 			var city = req.body.queryResult.parameters.city;
 			var date = req.body.queryResult.parameters.date;
 			buildSoap(city,date);
@@ -148,16 +155,17 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			soap_req.write(soap_xml);
 			soap_req.end();
 			response = "Avviato il processo per controllare il meteo";
+			console.log("Response: "+response);
 			break;
 		default:
+			console.log("Intent DEFAULT: echo");
 			response = req.body.queryResult && req.body.queryResult.parameters &&
 			req.body.queryResult.parameters.echoText
 				? req.body.queryResult.parameters.echoText
 				: "Seems like some problem. Speak again.";
+			console.log("Response: "+response);
 			break;
 	}
-
-	console.log("Ciao!");
 	console.log("End");
 	return res.json({
 		fulfillmentText: response
