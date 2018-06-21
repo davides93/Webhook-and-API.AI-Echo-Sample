@@ -8,6 +8,7 @@ var request = require('request');
 var city = "";
 var date = "";
 var soap_xml = "";
+var response_json = "";
 var http_options = {}
 
 function makeRequest(){
@@ -31,13 +32,29 @@ function makeRequest(){
 
 var soap_req;
 
-function makeAsyncRequest(){
+function makeResponseRequestForGoogle(session, message){
+	response_json = "{\"event\":{\"name\": \"bp_result_event\",\"data\": {\"result_message\": \""+message+"\", \"success_code\": 200}},\"lang\":\"en\",\"sessionId\":\""+session+"\"}";
+	http_options = {
+		hostname: 'api.dialogflow.com',
+		port: 80,
+		path: 'api/query',
+		method: 'POST',
+		headers: {
+			'Authorization': "Bearer 8e2b1139164f43108031510c0c66fbec",
+			'Content-Type': 'application/json',
+			'Content-Length': response_json.length
+		}
+	}
+}
+
+function makeAsyncRequestForBP(session){
 	soap_req = http.request(http_options, (res) => {
 		console.log(`STATUS: ${res.statusCode}`);
 		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 		res.setEncoding('utf8');
 		res.on('data', (chunk) => {
 			console.log(`BODY: ${chunk}`);
+			makeResponseRequestForGoogle(session, chunk);
 		});
 
 		res.on('end', () => {
@@ -53,7 +70,7 @@ function makeAsyncRequest(){
 
 function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
 
-function buildSoap(city,date){
+function buildSoapForBP(city,date){
 	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
 		"    <x:Header/>\n" +
 		"    <x:Body>\n" +
@@ -104,9 +121,9 @@ restService.post("/SSG_APP_V1", function (req, res) {
 		case "bp_process_meteo":
 			var city = req.body.result.parameters.city;
 			var date = req.body.result.parameters.date;
-			buildSoap(city,date);
+			buildSoapForBP(city,date);
 			//makeRequest(); // Test
-			makeAsyncRequest();
+			makeAsyncRequestForBP();
 			soap_req.write(soap_xml);
 			soap_req.end();
 			speech = "Avviato il processo per controllare il meteo";
@@ -136,6 +153,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 	console.log("Start APP V2 POST!");
 	var intentName = req.body.queryResult.intent.displayName;
 	console.log("Retrieved Intent name: "+intentName);
+	var session = req.session;
 	switch(intentName) {
 		case "Somma Intent":
 			console.log("Intent: somma");
@@ -149,9 +167,9 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			console.log("Intent: bp_process_meteo");
 			var city = req.body.queryResult.parameters.city;
 			var date = req.body.queryResult.parameters.date;
-			buildSoap(city,date);
+			buildSoapForBP(city,date);
 			//makeRequest(); // Test
-			makeAsyncRequest();
+			makeAsyncRequestForBP(session);
 			soap_req.write(soap_xml);
 			soap_req.end();
 			response = "Avviato il processo per controllare il meteo";
