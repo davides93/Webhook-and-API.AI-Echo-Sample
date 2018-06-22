@@ -177,7 +177,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 	console.log("Start APP V2 POST!");
 	var intentName = req.body.queryResult.intent.displayName;
 	console.log("Retrieved Intent name: "+intentName);
-	var session = req.session;
+	var session = req.body.session;
 	console.log("Session: "+session);
 	switch(intentName) {
 		case "Somma Intent":
