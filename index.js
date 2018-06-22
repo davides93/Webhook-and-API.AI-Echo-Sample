@@ -76,7 +76,7 @@ function makeAsyncRequestForBP(session){
 		res.setEncoding('utf8');
 		res.on('data', (chunk) => {
 			console.log(`BODY: ${chunk}`);
-			makeResponseRequestForGoogle(session, chunk);
+			//makeResponseRequestForGoogle(session, chunk);
 		});
 
 		res.on('end', () => {
