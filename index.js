@@ -48,7 +48,7 @@ function makeResponseRequestForGoogle(session, message){
 		}
 	}
 
-	post_res = http.request(http_options, (res) => {
+	post_res = http.request(http_res_options, (res) => {
 		console.log(`STATUS: ${res.statusCode}`);
 		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 		res.setEncoding('utf8');
@@ -76,7 +76,7 @@ function makeAsyncRequestForBP(session){
 		res.setEncoding('utf8');
 		res.on('data', (chunk) => {
 			console.log(`BODY: ${chunk}`);
-			//makeResponseRequestForGoogle(session, chunk);
+			makeResponseRequestForGoogle(session, chunk);
 		});
 
 		res.on('end', () => {
