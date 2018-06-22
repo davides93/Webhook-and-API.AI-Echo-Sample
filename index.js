@@ -193,7 +193,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			var date = req.body.queryResult.parameters.date;
 			buildSoapForBP(city,date);
 			//makeRequest(); // Test
-			session = session.substr(session.length-36, session.length);
+			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
 			response = "Avviato il processo per controllare il meteo";
 			console.log("Response: "+response);
