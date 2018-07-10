@@ -252,10 +252,12 @@ restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
 	}
 	console.log("End");
 	return res.json({
-		"response":{
-			"outputSpeech":{
-				"type": "PlainText",
-				"text": response
+		"body":{
+			"response":{
+				"outputSpeech":{
+					"type": "PlainText",
+					"text": response
+				}
 			}
 		}
 	});
