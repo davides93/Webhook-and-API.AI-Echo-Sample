@@ -227,7 +227,7 @@ restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
 			var arg1 = req.body.queryResult.parameters.arg1;
 			var arg2 = req.body.queryResult.parameters.arg2;
 			response = parseInt(arg1) + parseInt(arg2);
-			response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
+			response = "La somma di "+arg1+" eeeeee "+arg2+" èèè ugaule aaaa "+response.toString();
 			console.log("Response: "+response);
 			break;
 		case "Blue Prism Controller - Meteo":
