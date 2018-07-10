@@ -69,31 +69,6 @@ function makeResponseRequestForGoogle(session, message){
 	post_res.end();
 }
 
-function makeAsyncRequestForBP(session){
-	soap_req = http.request(http_options, (res) => {
-		console.log(`STATUS: ${res.statusCode}`);
-		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-		res.setEncoding('utf8');
-		res.on('data', (chunk) => {
-			console.log(`BODY: ${chunk}`);
-			makeResponseRequestForGoogle(session, chunk);
-		});
-
-		res.on('end', () => {
-			console.log('No more data in response.')
-		})
-	});
-
-	soap_req.on('error', (e) => {
-		console.log(`problem with request: ${e.message}`);
-	});
-
-	soap_req.write(soap_xml);
-	soap_req.end();
-}
-
-function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
-
 function buildSoapForBP(city,date){
 	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
 		"    <x:Header/>\n" +
@@ -118,6 +93,30 @@ function buildSoapForBP(city,date){
 		}
 	}
 }
+function makeAsyncRequestForBP(session){
+	soap_req = http.request(http_options, (res) => {
+		console.log(`STATUS: ${res.statusCode}`);
+		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+		res.setEncoding('utf8');
+		res.on('data', (chunk) => {
+			console.log(`BODY: ${chunk}`);
+			makeResponseRequestForGoogle(session, chunk);
+		});
+
+		res.on('end', () => {
+			console.log('No more data in response.')
+		})
+	});
+
+	soap_req.on('error', (e) => {
+		console.log(`problem with request: ${e.message}`);
+	});
+
+	soap_req.write(soap_xml);
+	soap_req.end();
+}
+
+function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
 
 
 const restService = express();
@@ -175,6 +174,49 @@ restService.post("/SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
 	console.log("Start APP V2 POST!");
+	var intentName = req.body.queryResult.intent.displayName;
+	console.log("Retrieved Intent name: "+intentName);
+	var session = req.body.session;
+	console.log("Session: "+session);
+	switch(intentName) {
+		case "Somma Intent":
+			console.log("Intent: somma");
+			var arg1 = req.body.queryResult.parameters.arg1;
+			var arg2 = req.body.queryResult.parameters.arg2;
+			response = parseInt(arg1) + parseInt(arg2);
+			response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
+			console.log("Response: "+response);
+			break;
+		case "Blue Prism Controller - Meteo":
+			console.log("Intent: bp_process_meteo");
+			var city = req.body.queryResult.parameters.city;
+			var date = req.body.queryResult.parameters.date;
+			buildSoapForBP(city,date);
+			//makeRequest(); // Test
+			session = session.toString().substr(session.length-36, session.length);
+			makeAsyncRequestForBP(session);
+			response = "Avviato il processo per controllare il meteo";
+			console.log("Response: "+response);
+			break;
+		default:
+			console.log("Intent DEFAULT: echo");
+			response = req.body.queryResult && req.body.queryResult.parameters &&
+			req.body.queryResult.parameters.echoText
+				? req.body.queryResult.parameters.echoText
+				: "Seems like some problem. Speak again.";
+			console.log("Response: "+response);
+			break;
+	}
+	console.log("End");
+	return res.json({
+		fulfillmentText: response
+	});
+});
+
+restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
+	var response;
+	// write data to request body
+	console.log("Start Alexa APP V2 POST!");
 	var intentName = req.body.queryResult.intent.displayName;
 	console.log("Retrieved Intent name: "+intentName);
 	var session = req.body.session;
