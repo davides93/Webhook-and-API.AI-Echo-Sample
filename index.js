@@ -217,15 +217,15 @@ restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
 	console.log("Start Alexa APP V2 POST!");
-	var intentName = req.body.queryResult.intent.displayName;
+	var intentName = req.body.request.intent.name;
 	console.log("Retrieved Intent name: "+intentName);
 	var session = req.body.session;
 	console.log("Session: "+session);
 	switch(intentName) {
-		case "Somma Intent":
+		case "sum_numbers":
 			console.log("Intent: somma");
-			var arg1 = req.body.queryResult.parameters.arg1;
-			var arg2 = req.body.queryResult.parameters.arg2;
+			var arg1 = req.body.request.intent.slots.first_num.value;
+			var arg2 = req.body.request.intent.slots.second_num.value;
 			response = parseInt(arg1) + parseInt(arg2);
 			response = "La somma di "+arg1+" eeeeee "+arg2+" èèè ugaule aaaa "+response.toString();
 			console.log("Response: "+response);
