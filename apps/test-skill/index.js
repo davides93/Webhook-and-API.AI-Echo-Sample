@@ -4,7 +4,6 @@ module.change_code = 1;
 var alexa = require( 'alexa-app' );
 var app = new alexa.app( 'test-skill' );
 
-
 app.launch( function( request, response ) {
 	response.say( 'Welcome to your test skill' ).reprompt( 'Way to go. You got it to run. Bad ass.' ).shouldEndSession( false );
 } );
@@ -17,35 +16,43 @@ app.error = function( exception, request, response ) {
 	response.say( 'Sorry an error occured ' + error.message);
 };
 
-app.intent('SumPlayer',
-	{
-		"slots": [
-			{
-				"name": "first_num",
-				"type": "AMAZON.NUMBER",
-				"samples": [
-					"{first_num}"
-				]
-			},
-			{
-				"name": "second_num",
-				"type": "AMAZON.NUMBER",
-				"samples": [
-					"{second_num}"
-				]
-			}
-		],
-		"samples": [
-			"sum {first_num} and {second_num}",
-			"sum two numbers"
-		]
+app.intent("AMAZON.HelpIntent", {
+		"slots": {},
+		"utterances": []
 	},
+	function(request, response) {
+		var helpOutput = "You can say 'give me the number ten' or ask 'some question'. You can also say stop or exit to quit.";
+		var reprompt = "What would you like to do?";
+		// AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
+		response.say(helpOutput).reprompt(reprompt).shouldEndSession(false);
+	}
+);
+
+app.intent("AMAZON.StopIntent", {
+		"slots": {},
+		"utterances": []
+	}, function(request, response) {
+		var stopOutput = "Don't You Worry. I'll be back.";
+		response.say(stopOutput);
+	}
+);
+
+app.intent("AMAZON.CancelIntent", {
+		"slots": {},
+		"utterances": []
+	}, function(request, response) {
+		var cancelOutput = "No problem. Request cancelled.";
+		response.say(cancelOutput);
+	}
+);
+
+app.intent('SumPlayer',
 	function(request,response) {
 		var arg1 = request.slot('first_num');
 		var arg2 = request.slot('second_num');
 		var res = parseInt(arg1) + parseInt(arg2);
-		res  = "The sum between "+arg1+" and "+arg2+" is queal to "+res.toString();
-		response.say(res);
+		res  = "The sum between "+arg1+" and "+arg2+" is equeal to "+res.toString();
+		response.say(res).shouldEndSession(false);
 	}
 );
 
@@ -60,7 +67,7 @@ app.intent('sayNumber',
 	},
 	function(request,response) {
 		var number = request.slot('number');
-		response.say("You asked for the number "+number);
+		response.say("You asked for the number "+number).shouldEndSession(false);
 	}
 );
 
