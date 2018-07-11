@@ -59,36 +59,39 @@ app.intent('SumPlayer',
 	},
 	function(request,response) {
 		var session = null;
+		var num1 = null;
+		var num2 = null;
 		// check if you can use session (read or write)
 		if(request.hasSession()){
 			session = request.getSession();
+			session.get('first_num');
+			session.get('second_num');
 		}
 		// get the session object
-
 		var arg1 = request.slot('first_num');
 		var arg2 = request.slot('second_num');
-		if(arg1 == null){
-			var say = "You need to give the first number";
-			var prompt = "What's the first number?";
-			response.say(say).reprompt(prompt).shouldEndSession(false);
-		}else{
-			session.set("first_num",arg1);
-		}
-		if(arg2 == null){
-			var say = "You need to give the second number";
-			var prompt = "What's the second number?";
-			response.say(say).reprompt(prompt).shouldEndSession(false);
-		}else{
-			session.set("second_num",arg2);
-		}
-		if(session != null){
-			var num1 = session.get('first_num');
-			var num2 = session.get('second_num');
-			if(num1 != null && num2 != null){
-				var res = parseInt(num1) + parseInt(num2);
-				res  = "The sum between "+num1+" and "+num2+" is equeal to "+res.toString();
-				response.say(res);
+		if(num1==null){
+			if(arg1 == null){
+				var say = "You need to give the first number";
+				var prompt = "What's the first number?";
+				return response.say(say).reprompt(prompt).shouldEndSession(false);
+			}else{
+				session.set("first_num",arg1);
 			}
+		}
+		if(num2==null){
+			if(arg2 == null){
+				var say = "You need to give the second number";
+				var prompt = "What's the second number?";
+				return response.say(say).reprompt(prompt).shouldEndSession(false);
+			}else{
+				session.set("second_num",arg2);
+			}
+		}
+		if(num1 != null && num2 != null){
+			var res = parseInt(num1) + parseInt(num2);
+			res  = "The sum between "+num1+" and "+num2+" is equeal to "+res.toString();
+			response.say(res);
 		}
 	}
 );
