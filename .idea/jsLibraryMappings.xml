@@ -2,5 +2,6 @@
 <project version="4">
   <component name="JavaScriptLibraryMappings">
     <includedPredefinedLibrary name="Node.js Core" />
+    <excludedPredefinedLibrary name="Webhook-and-API.AI-Echo-Sample/apps/test-skill/node_modules" />
   </component>
 </project>
