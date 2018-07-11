@@ -20,6 +20,7 @@
  },
  "homepage": "https://github.com/Kenji776/AlexaTestSkill#readme",
  "dependencies": {
-  "alexa-app": "^2.3.2"
+  "alexa-app": "^2.3.2",
+  "ssml-builder": "^0.4.3"
  }
 }

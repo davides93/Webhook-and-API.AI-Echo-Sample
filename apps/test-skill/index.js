@@ -3,6 +3,8 @@ module.change_code = 1;
 
 var alexa = require( 'alexa-app' );
 var app = new alexa.app( 'test-skill' );
+var Speech = require('ssml-builder');
+var AmazonSpeech = require('ssml-builder/amazon_speech');
 
 app.launch( function( request, response ) {
 	response.say( 'Welcome to your test skill' ).reprompt( 'Way to go. You got it to run. Bad ass.' ).shouldEndSession( false );
@@ -47,12 +49,47 @@ app.intent("AMAZON.CancelIntent", {
 );
 
 app.intent('SumPlayer',
+	{
+		"slots":{"first_num":"NUMBER", "second_num":"NUMBER"}
+		,"utterances":[
+			"sum {1-100|first_num} and {1-100|second_num}",
+			"sum two numbers",
+			"{!-100|first_num}",
+			"{!-100|second_num}"]
+	},
 	function(request,response) {
+		var session = null;
+		// check if you can use session (read or write)
+		if(request.hasSession()){
+			session = request.getSession();
+		}
+		// get the session object
+
 		var arg1 = request.slot('first_num');
 		var arg2 = request.slot('second_num');
-		var res = parseInt(arg1) + parseInt(arg2);
-		res  = "The sum between "+arg1+" and "+arg2+" is equeal to "+res.toString();
-		response.say(res).shouldEndSession(false);
+		if(arg1 == null){
+			var say = "You need to give the first number";
+			var prompt = "What's the first number?";
+			response.say(say).reprompt(prompt).shouldEndSession(false);
+		}else{
+			session.set("first_num",arg1);
+		}
+		if(arg2 == null){
+			var say = "You need to give the second number";
+			var prompt = "What's the second number?";
+			response.say(say).reprompt(prompt).shouldEndSession(false);
+		}else{
+			session.set("second_num",arg2);
+		}
+		if(session != null){
+			var num1 = session.get('first_num');
+			var num2 = session.get('second_num');
+			if(num1 != null && num2 != null){
+				var res = parseInt(num1) + parseInt(num2);
+				res  = "The sum between "+num1+" and "+num2+" is equeal to "+res.toString();
+				response.say(res);
+			}
+		}
 	}
 );
 
