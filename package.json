@@ -4,7 +4,7 @@
  "description": "Webhook echo sample",
  "main": "server.js",
  "scripts": {
-  "start": "node hello.js"
+  "start": "node index.js"
  },
  "author": "Sunil Syal",
  "dependencies": {
