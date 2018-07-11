@@ -80,7 +80,7 @@ app.intent('SumPlayer',
 				console.log("Request: first_num and num not present");
 				var say = "You need to give the first number";
 				var prompt = "What's the first number?";
-				response.say(say).reprompt(prompt).shouldKeepAlive(true);
+				response.say(say).reprompt(prompt).shouldEndSession(false);
 			}else if (arg1 != null){
 				console.log("Request: first_num present");
 				session.set("first_num",arg1);
@@ -94,7 +94,7 @@ app.intent('SumPlayer',
 				console.log("Session: second_num and num not present");
 				var say = "You need to give the second number";
 				var prompt = "What's the second number?";
-				response.say(say).reprompt(prompt).shouldKeepAlive(true);
+				response.say(say).reprompt(prompt).shouldEndSession(false);
 			}else if (arg2 != null){
 				console.log("Request: second_num present");
 				session.set("second_num",arg2);
