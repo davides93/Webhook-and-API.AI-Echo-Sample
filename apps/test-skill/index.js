@@ -18,6 +18,28 @@ app.error = function( exception, request, response ) {
 };
 
 app.intent('SumPlayer',
+	{
+		"slots": [
+			{
+				"name": "first_num",
+				"type": "AMAZON.NUMBER",
+				"samples": [
+					"{first_num}"
+				]
+			},
+			{
+				"name": "second_num",
+				"type": "AMAZON.NUMBER",
+				"samples": [
+					"{second_num}"
+				]
+			}
+		],
+		"samples": [
+			"sum {first_num} and {second_num}",
+			"sum two numbers"
+		]
+	},
 	function(request,response) {
 		var arg1 = request.slot('first_num');
 		var arg2 = request.slot('second_num');
