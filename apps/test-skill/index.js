@@ -17,6 +17,16 @@ app.error = function( exception, request, response ) {
 	response.say( 'Sorry an error occured ' + error.message);
 };
 
+app.intent('SumPlayer',
+	function(request,response) {
+		var arg1 = request.slot('first_num');
+		var arg2 = request.slot('second_num');
+		var res = parseInt(arg1) + parseInt(arg2);
+		res  = "The sum between "+arg1+" and "+arg2+" is queal to "+res.toString();
+		response.say(res);
+	}
+);
+
 app.intent('sayNumber',
 	{
 		"slots":{"number":"NUMBER"}
