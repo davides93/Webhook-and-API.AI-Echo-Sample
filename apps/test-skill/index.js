@@ -55,7 +55,7 @@ app.intent('SumPlayer',
 			"sum {1-100|first_num} and {1-100|second_num}",
 			"sum two numbers",
 			"the first number is {!-100|first_num}",
-			"the second number is {!-100|second_num}"]
+			"the second number is {!-100|second_num}", "{!-100|num}"]
 	},
 	function(request,response) {
 		var session = null;
@@ -70,22 +70,27 @@ app.intent('SumPlayer',
 		// get the session object
 		var arg1 = request.slot('first_num');
 		var arg2 = request.slot('second_num');
+		var num = request.slot('num');
 		if(num1==null){
-			if(arg1 == null){
+			if(arg1 == null && num == null){
 				var say = "You need to give the first number";
 				var prompt = "What's the first number?";
 				return response.say(say).reprompt(prompt).shouldEndSession(false);
-			}else{
+			}else if (arg1 != null){
 				session.set("first_num",arg1);
+			}else if (num != null){
+				session.set("first_num",num);
 			}
 		}
 		if(num2==null){
-			if(arg2 == null){
+			if(arg2 == null && num == null){
 				var say = "You need to give the second number";
 				var prompt = "What's the second number?";
 				return response.say(say).reprompt(prompt).shouldEndSession(false);
-			}else{
+			}else if (arg2 != null){
 				session.set("second_num",arg2);
+			}else if (num != null){
+				session.set("second_num",num);
 			}
 		}
 		if(num1 != null && num2 != null){
