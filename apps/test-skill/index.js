@@ -54,8 +54,8 @@ app.intent('SumPlayer',
 		,"utterances":[
 			"sum {1-100|first_num} and {1-100|second_num}",
 			"sum two numbers",
-			"{!-100|first_num}",
-			"{!-100|second_num}"]
+			"the first number is {!-100|first_num}",
+			"the second number is {!-100|second_num}"]
 	},
 	function(request,response) {
 		var session = null;
