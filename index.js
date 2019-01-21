@@ -80,7 +80,7 @@ function buildSoapForBP(username){
 		"</x:Envelope>";
 
 	http_options = {
-		hostname: 'localhost',
+		hostname: '172.68.51.53',
 		port: 8181,
 		path: '/ws/NotaSpese',
 		method: 'POST',
@@ -160,7 +160,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 		case "Blue Prism Controller - Meteo":
 			console.log("Intent: bp_process_meteo");
 			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
-				req.body.queryResult.parameters.username :"";
+				req.body.queryResult.parameters.username : "";
 			buildSoapForBP(username);
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
