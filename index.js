@@ -146,6 +146,17 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
 			console.log("Response: "+response);
 			break;
+		case "Blue Prism Controller - Note Spese":
+			console.log("Intent: bp_process_notespese");
+			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
+				req.body.queryResult.parameters.username :"";
+			buildSoapForBP(username);
+			//makeRequest(); // Test
+			session = session.toString().substr(session.length-36, session.length);
+			makeAsyncRequestForBP(session);
+			response = "Avviato il processo";
+			console.log("Response: "+response);
+			break;
 		case "Blue Prism Controller - Meteo":
 			console.log("Intent: bp_process_meteo");
 			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
