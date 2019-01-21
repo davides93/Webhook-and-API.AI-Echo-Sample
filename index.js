@@ -15,7 +15,7 @@ var http_res_options = {}
 function makeRequest(){
 	var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 	var xmlhttp = new XMLHttpRequest();
-	var url = "http://ec2-35-178-154-161.eu-west-2.compute.amazonaws.com:8181/ws/Meteo";
+	var url = "http://localhost:8181/ws/Meteo";
 	xmlhttp.open('POST',url, true);
 //Send the proper header information along with the request
 	xmlhttp.setRequestHeader('Content-type', 'text/xml; charset=utf-8');
@@ -69,24 +69,23 @@ function makeResponseRequestForGoogle(session, message){
 	post_res.end();
 }
 
-function buildSoapForBP(city,date){
-	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
+function buildSoapForBP(username){
+	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:NotaSpese\">\n" +
 		"    <x:Header/>\n" +
 		"    <x:Body>\n" +
-		"        <urn:Meteo>\n" +
-		"            <urn:City>"+city+"</urn:City>\n" +
-		"            <urn:Date>"+date+"</urn:Date>\n" +
-		"        </urn:Meteo>\n" +
+		"        <urn:NotaSpese>\n" +
+		"            <urn:UserName>"+username+"</urn:UserName>\n" +
+		"        </urn:NotaSpese>\n" +
 		"    </x:Body>\n" +
 		"</x:Envelope>";
 
 	http_options = {
-		hostname: 'ec2-35-178-154-161.eu-west-2.compute.amazonaws.com',
+		hostname: 'localhost',
 		port: 8181,
-		path: '/ws/Meteo',
+		path: '/ws/NotaSpese',
 		method: 'POST',
 		headers: {
-			'Authorization': "Basic " + new Buffer("admin" + ":" + "admin").toString("base64"),
+			'Authorization': "Basic " + new Buffer("admin" + ":" + "admin2").toString("base64"),
 			'Content-Type': 'text/xml',
 			'SOAPAction': '',
 			'Content-Length': soap_xml.length
@@ -130,46 +129,6 @@ restService.use(
 restService.use(bodyParser.json());
 
 
-restService.post("/SSG_APP_V1", function (req, res) {
-	var speech;
-	// write data to request body
-	var intentName = req.body.result.metadata.intentName;
-	switch(intentName) {
-		case "somma":
-			var arg1 = req.body.result.parameters.arg1;
-			var arg2 = req.body.result.parameters.arg2;
-			speech = parseInt(arg1) + parseInt(arg2);
-			speech = "La somma di "+arg1+" e "+arg2+" è ugaule a "+speech.toString();
-			break;
-		case "bp_process_meteo":
-			var city = req.body.result.parameters.city;
-			var date = req.body.result.parameters.date;
-			buildSoapForBP(city,date);
-			//makeRequest(); // Test
-			makeAsyncRequestForBP();
-			soap_req.write(soap_xml);
-			soap_req.end();
-			speech = "Avviato il processo per controllare il meteo";
-			break;
-		case "bp_result_event":
-			break;
-		default:
-			speech = req.body.result && req.body.result.parameters &&
-			req.body.result.parameters.echoText
-				? req.body.result.parameters.echoText
-				: "Seems like some problem. Speak again.";
-			break;
-	}
-
-	console.log("Ciao!");
-	console.log("End");
-	return res.json({
-		speech: speech,
-		displayText: speech,
-		source: "webhook-echo-sample"
-	});
-});
-
 restService.post("/SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
@@ -189,13 +148,13 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			break;
 		case "Blue Prism Controller - Meteo":
 			console.log("Intent: bp_process_meteo");
-			var city = req.body.queryResult.parameters.city;
-			var date = req.body.queryResult.parameters.date;
-			buildSoapForBP(city,date);
+			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
+				req.body.queryResult.parameters.username :"";
+			buildSoapForBP(username);
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
-			response = "Avviato il processo per controllare il meteo";
+			response = "Avviato il processo";
 			console.log("Response: "+response);
 			break;
 		default:
@@ -262,6 +221,45 @@ restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
 			sessionAttributes:{},
 			userAgent: "ask-node/2.0.0 Node/v8.10.0"
 		}
+	});
+});
+restService.post("/SSG_APP_V1", function (req, res) {
+	var speech;
+	// write data to request body
+	var intentName = req.body.result.metadata.intentName;
+	switch(intentName) {
+		case "somma":
+			var arg1 = req.body.result.parameters.arg1;
+			var arg2 = req.body.result.parameters.arg2;
+			speech = parseInt(arg1) + parseInt(arg2);
+			speech = "La somma di "+arg1+" e "+arg2+" è ugaule a "+speech.toString();
+			break;
+		case "bp_process_meteo":
+			var city = req.body.result.parameters.city;
+			var date = req.body.result.parameters.date;
+			buildSoapForBP(city,date);
+			//makeRequest(); // Test
+			makeAsyncRequestForBP();
+			soap_req.write(soap_xml);
+			soap_req.end();
+			speech = "Avviato il processo per controllare il meteo";
+			break;
+		case "bp_result_event":
+			break;
+		default:
+			speech = req.body.result && req.body.result.parameters &&
+			req.body.result.parameters.echoText
+				? req.body.result.parameters.echoText
+				: "Seems like some problem. Speak again.";
+			break;
+	}
+
+	console.log("Ciao!");
+	console.log("End");
+	return res.json({
+		speech: speech,
+		displayText: speech,
+		source: "webhook-echo-sample"
 	});
 });
 
