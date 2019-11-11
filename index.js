@@ -69,23 +69,24 @@ function makeResponseRequestForGoogle(session, message){
 	post_res.end();
 }
 
-function buildSoapForBP(username){
-	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:NotaSpese\">\n" +
+function buildSoapForBP(dove,quando){
+	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
 		"    <x:Header/>\n" +
 		"    <x:Body>\n" +
-		"        <urn:NotaSpese>\n" +
-		"            <urn:UserName>"+username+"</urn:UserName>\n" +
-		"        </urn:NotaSpese>\n" +
+		"        <urn:Meteo>\n" +
+		"            <urn:dove>"+dove+"</urn:dove>\n" +
+		"            <urn:quando>"+quando+"</urn:quando>\n" +
+		"        </urn:Meteo>\n" +
 		"    </x:Body>\n" +
 		"</x:Envelope>";
 
 	http_options = {
-		hostname: '172.68.51.53',
+		hostname: '13.94.168.98',
 		port: 8181,
-		path: '/ws/NotaSpese',
+		path: '/ws/Meteo',
 		method: 'POST',
 		headers: {
-			'Authorization': "Basic " + new Buffer("admin" + ":" + "admin2").toString("base64"),
+			'Authorization': "Basic " + new Buffer("admin" + ":" + "admin1").toString("base64"),
 			'Content-Type': 'text/xml',
 			'SOAPAction': '',
 			'Content-Length': soap_xml.length
@@ -159,9 +160,11 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			break;
 		case "Blue Prism Controller - Meteo":
 			console.log("Intent: bp_process_meteo");
-			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
-				req.body.queryResult.parameters.username : "";
-			buildSoapForBP(username);
+			var dove = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.dove ?
+				req.body.queryResult.parameters.dove : "";
+			var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
+				req.body.queryResult.parameters.quando : "";
+			buildSoapForBP(dove,quando);
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
@@ -274,7 +277,7 @@ restService.post("/SSG_APP_V1", function (req, res) {
 	});
 });
 
-restService.listen(process.env.PORT || 8000, function () {
+	restService.listen(process.env.PORT || 8000, function () {
 	console.log("Server up and listening");
 });
 
