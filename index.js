@@ -18,7 +18,7 @@ const bodyParser = require("body-parser");
 
 const bp_user = 'admin';
 const bp_pwd = 'admin1';
-const bp_hostname = 'ec2-34-239-167-186.compute-1.amazonaws.com';
+const bp_hostname = 'ec2-54-164-220-127.compute-1.amazonaws.com';
 
 
 var http = require('http');
@@ -324,7 +324,7 @@ restService.post("/SSG_APP_V1", function (req, res) {
 		source: "webhook-echo-sample"
 	});
 });
-restService.listen(process.env.PORT || 8000, function () {
+	restService.listen(process.env.PORT || 8000, function () {
 	console.log("Server up and listening");
 });
 
