@@ -80,10 +80,17 @@ function buildSoapForBP(dove,quando){
 		"    </x:Body>\n" +
 		"</x:Envelope>";
 
+	soap_xml = "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:chromedriverupdater\">\n" +
+		"   <soapenv:Header/>\n" +
+		"   <soapenv:Body>\n" +
+		"      <urn:ChromeDriverUpdater soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"/>\n" +
+		"   </soapenv:Body>\n" +
+		"</soapenv:Envelope>";
+
 	http_options = {
-		hostname: '13.94.168.98',
+		hostname: 'ec2-18-207-1-191.compute-1.amazonaws.com',
 		port: 8181,
-		path: '/ws/Meteo',
+		path: '/ws/ChromeDriverUpdater',
 		method: 'POST',
 		headers: {
 			'Authorization': "Basic " + new Buffer("admin" + ":" + "admin1").toString("base64"),
@@ -165,6 +172,19 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
 				req.body.queryResult.parameters.quando : "";
 			buildSoapForBP(dove,quando);
+			//makeRequest(); // Test
+			session = session.toString().substr(session.length-36, session.length);
+			makeAsyncRequestForBP(session);
+			response = "Avviato il processo";
+			console.log("Response: "+response);
+			break;
+		case "Blue Prism Controller - ChromeDriver":
+			console.log("Intent: bp_process_ChromeDriver");
+			//var dove = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.dove ?
+				//req.body.queryResult.parameters.dove : "";
+			//var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
+				//req.body.queryResult.parameters.quando : "";
+			buildSoapForBP("","");
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
