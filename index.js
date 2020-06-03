@@ -1,7 +1,25 @@
 "use strict";
+// Import the service function and various response classes
+const {
+	dialogflow,
+	actionssdk,
+	Image,
+	Table,
+	Carousel,
+} = require('actions-on-google');
+//const agent = new WebhookClient({request: request, response: response});
+const app = dialogflow({
+	debug: true
+});
+
 
 const express = require("express");
 const bodyParser = require("body-parser");
+
+const bp_user = 'admin';
+const bp_pwd = 'admin1';
+const bp_hostname = 'ec2-34-239-167-186.compute-1.amazonaws.com';
+
 
 var http = require('http');
 var request = require('request');
@@ -30,10 +48,8 @@ function makeRequest(){
 	}
 	xmlhttp.send(soap_xml);
 }
-
 var soap_req;
 var post_res;
-
 function makeResponseRequestForGoogle(session, message){
 	response_json = "{\"event\":{\"name\": \"bp_result_event\",\"data\": {\"result_message\": \""+message+"\", \"success_code\": 200}},\"lang\":\"en\",\"sessionId\":\""+session+"\"}";
 	http_res_options = {
@@ -68,46 +84,50 @@ function makeResponseRequestForGoogle(session, message){
 	post_res.write(response_json);
 	post_res.end();
 }
+function buildSoapForBP(processName,dictParam){
+	// soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
+	// 	"    <x:Header/>\n" +
+	// 	"    <x:Body>\n" +
+	// 	"        <urn:Meteo>\n" +
+	// 	"            <urn:dove>"+dove+"</urn:dove>\n" +
+	// 	"            <urn:quando>"+quando+"</urn:quando>\n" +
+	// 	"        </urn:Meteo>\n" +
+	// 	"    </x:Body>\n" +
+	// 	"</x:Envelope>";
 
-function buildSoapForBP(dove,quando){
-	soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
-		"    <x:Header/>\n" +
-		"    <x:Body>\n" +
-		"        <urn:Meteo>\n" +
-		"            <urn:dove>"+dove+"</urn:dove>\n" +
-		"            <urn:quando>"+quando+"</urn:quando>\n" +
-		"        </urn:Meteo>\n" +
-		"    </x:Body>\n" +
-		"</x:Envelope>";
+	if(processName.toString().trim() == ""){
+		processName="ChromeDriverUpdater";
+	}
 
-	soap_xml = "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:chromedriverupdater\">\n" +
+	soap_xml = "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:"+processName+"\">\n" +
 		"   <soapenv:Header/>\n" +
 		"   <soapenv:Body>\n" +
-		"      <urn:ChromeDriverUpdater soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"/>\n" +
+		"      <urn:"+processName+" soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"/>\n" +
 		"   </soapenv:Body>\n" +
 		"</soapenv:Envelope>";
 
 	http_options = {
-		hostname: 'ec2-18-207-1-191.compute-1.amazonaws.com',
+		hostname: bp_hostname,
 		port: 8181,
-		path: '/ws/ChromeDriverUpdater',
+		path: '/ws/'+processName,
 		method: 'POST',
 		headers: {
-			'Authorization': "Basic " + new Buffer("admin" + ":" + "admin1").toString("base64"),
+			'Authorization': "Basic " + new Buffer(bp_user + ":" + bp_pwd).toString("base64"),
 			'Content-Type': 'text/xml',
 			'SOAPAction': '',
 			'Content-Length': soap_xml.length
 		}
 	}
 }
-function makeAsyncRequestForBP(session){
+function makeAsyncRequestForBP(conv){
 	soap_req = http.request(http_options, (res) => {
 		console.log(`STATUS: ${res.statusCode}`);
 		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 		res.setEncoding('utf8');
 		res.on('data', (chunk) => {
 			console.log(`BODY: ${chunk}`);
-			makeResponseRequestForGoogle(session, chunk);
+			//conv.close(chunk);
+			//makeResponseRequestForGoogle(chunk);
 		});
 
 		res.on('end', () => {
@@ -122,21 +142,28 @@ function makeAsyncRequestForBP(session){
 	soap_req.write(soap_xml);
 	soap_req.end();
 }
-
 function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
 
+app.intent('Blue Prism Controller - ChromeDriver', (conv) => {
+	console.log("Retrieved ChromeDriver");
+	buildSoapForBP("ChromeDriverUpdater",null);
+	makeAsyncRequestForBP(conv);
+	var response = "Avviato il processo";
+	console.log("Response: "+response);
+	conv.close(response);
+});
+
+app.intent('Somma Intent', (conv, params) => {
+	var arg1 = params.arg1;
+	var arg2 = params.arg2;
+	var response = parseInt(arg1) + parseInt(arg2);
+	response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
+	conv.close(response);
+});
 
 const restService = express();
-
-restService.use(
-	bodyParser.urlencoded({
-		extended: true
-	})
-);
-
+//restService.use(bodyParser.urlencoded({extended: true}));
 restService.use(bodyParser.json());
-
-
 restService.post("/SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
@@ -158,7 +185,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 			console.log("Intent: bp_process_notespese");
 			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
 				req.body.queryResult.parameters.username :"";
-			buildSoapForBP(username);
+			buildSoapForBP("NoteSpese",null);
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
@@ -171,7 +198,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 				req.body.queryResult.parameters.dove : "";
 			var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
 				req.body.queryResult.parameters.quando : "";
-			buildSoapForBP(dove,quando);
+			buildSoapForBP("Meteo",null);
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
@@ -184,7 +211,7 @@ restService.post("/SSG_APP_V2", function (req, res) {
 				//req.body.queryResult.parameters.dove : "";
 			//var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
 				//req.body.queryResult.parameters.quando : "";
-			buildSoapForBP("","");
+			buildSoapForBP("ChromeDriverUpdater",null);
 			//makeRequest(); // Test
 			session = session.toString().substr(session.length-36, session.length);
 			makeAsyncRequestForBP(session);
@@ -202,9 +229,10 @@ restService.post("/SSG_APP_V2", function (req, res) {
 	}
 	console.log("End");
 	return res.json({
-		fulfillmentText: response
+		"fulfillmentText": response,
 	});
 });
+restService.post('/fulfillment',app);
 
 restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
 	var response;
@@ -296,8 +324,7 @@ restService.post("/SSG_APP_V1", function (req, res) {
 		source: "webhook-echo-sample"
 	});
 });
-
-	restService.listen(process.env.PORT || 8000, function () {
+restService.listen(process.env.PORT || 8000, function () {
 	console.log("Server up and listening");
 });
 

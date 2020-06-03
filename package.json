@@ -16,6 +16,10 @@
   "request": "^2.87.0",
   "restify": "^7.6.0",
   "ssml-builder": "^0.4.3",
-  "xmlhttprequest": "^1.8.0"
+  "xmlhttprequest": "^1.8.0",
+  "dialogflow-fulfillment": "^0.5.0",
+  "firebase-admin": "^5.12.1",
+  "firebase-functions": "^1.0.3",
+  "actions-on-google": "^2.1.3"
  }
 }
