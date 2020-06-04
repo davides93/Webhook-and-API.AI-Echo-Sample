@@ -1,240 +1,23 @@
-"use strict";
-// Import the service function and various response classes
-const {
-	dialogflow,
-	actionssdk,
-	Image,
-	Table,
-	Carousel,
-} = require('actions-on-google');
-//const agent = new WebhookClient({request: request, response: response});
-const app = dialogflow({
-	debug: true
-});
-
 
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const bp_user = 'admin';
-const bp_pwd = 'admin1';
-const bp_hostname = 'ec2-54-164-220-127.compute-1.amazonaws.com';
-
-
-var http = require('http');
-var request = require('request');
-var city = "";
-var date = "";
-var soap_xml = "";
-var response_json = "";
-var http_options = {}
-var http_res_options = {}
-
-function makeRequest(){
-	var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-	var xmlhttp = new XMLHttpRequest();
-	var url = "http://localhost:8181/ws/Meteo";
-	xmlhttp.open('POST',url, true);
-//Send the proper header information along with the request
-	xmlhttp.setRequestHeader('Content-type', 'text/xml; charset=utf-8');
-	xmlhttp.setRequestHeader('Authorization',"Basic " + new Buffer("admin" + ":" + "admin").toString("base64"));
-	xmlhttp.setRequestHeader('SOAPAction','');
-	//xmlhttp.setData("text/xml", soap_xml);
-
-	xmlhttp.onreadystatechange = function() {//Call a function when the state changes.
-		if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			alert(xmlhttp.responseText);
-		}
-	}
-	xmlhttp.send(soap_xml);
-}
-var soap_req;
-var post_res;
-function makeResponseRequestForGoogle(session, message){
-	response_json = "{\"event\":{\"name\": \"bp_result_event\",\"data\": {\"result_message\": \""+message+"\", \"success_code\": 200}},\"lang\":\"en\",\"sessionId\":\""+session+"\"}";
-	http_res_options = {
-		hostname: 'api.dialogflow.com',
-		port: 80,
-		path: 'api/query',
-		method: 'POST',
-		headers: {
-			'Authorization': "Bearer 8e2b1139164f43108031510c0c66fbec",
-			'Content-Type': 'application/json',
-			'Content-Length': response_json.length
-		}
-	}
-
-	post_res = http.request(http_res_options, (res) => {
-		console.log(`STATUS: ${res.statusCode}`);
-		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-		res.setEncoding('utf8');
-		res.on('data', (chunk) => {
-			console.log(`BODY: ${chunk}`);
-		});
-
-		res.on('end', () => {
-			console.log('No more data in response.')
-		})
-	});
-
-	post_res.on('error', (e) => {
-		console.log(`problem with request: ${e.message}`);
-	});
-
-	post_res.write(response_json);
-	post_res.end();
-}
-function buildSoapForBP(processName,dictParam){
-	// soap_xml = "<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:Meteo\">\n" +
-	// 	"    <x:Header/>\n" +
-	// 	"    <x:Body>\n" +
-	// 	"        <urn:Meteo>\n" +
-	// 	"            <urn:dove>"+dove+"</urn:dove>\n" +
-	// 	"            <urn:quando>"+quando+"</urn:quando>\n" +
-	// 	"        </urn:Meteo>\n" +
-	// 	"    </x:Body>\n" +
-	// 	"</x:Envelope>";
-
-	if(processName.toString().trim() == ""){
-		processName="ChromeDriverUpdater";
-	}
-
-	soap_xml = "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:blueprism:webservice:"+processName+"\">\n" +
-		"   <soapenv:Header/>\n" +
-		"   <soapenv:Body>\n" +
-		"      <urn:"+processName+" soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"/>\n" +
-		"   </soapenv:Body>\n" +
-		"</soapenv:Envelope>";
-
-	http_options = {
-		hostname: bp_hostname,
-		port: 8181,
-		path: '/ws/'+processName,
-		method: 'POST',
-		headers: {
-			'Authorization': "Basic " + new Buffer(bp_user + ":" + bp_pwd).toString("base64"),
-			'Content-Type': 'text/xml',
-			'SOAPAction': '',
-			'Content-Length': soap_xml.length
-		}
-	}
-}
-function makeAsyncRequestForBP(conv){
-	soap_req = http.request(http_options, (res) => {
-		console.log(`STATUS: ${res.statusCode}`);
-		console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-		res.setEncoding('utf8');
-		res.on('data', (chunk) => {
-			console.log(`BODY: ${chunk}`);
-			//conv.close(chunk);
-			//makeResponseRequestForGoogle(chunk);
-		});
-
-		res.on('end', () => {
-			console.log('No more data in response.')
-		})
-	});
-
-	soap_req.on('error', (e) => {
-		console.log(`problem with request: ${e.message}`);
-	});
-
-	soap_req.write(soap_xml);
-	soap_req.end();
-}
-function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
-
-app.intent('Blue Prism Controller - ChromeDriver', (conv) => {
-	console.log("Retrieved ChromeDriver");
-	buildSoapForBP("ChromeDriverUpdater",null);
-	makeAsyncRequestForBP(conv);
-	var response = "Avviato il processo";
-	console.log("Response: "+response);
-	conv.close(response);
-});
-
-app.intent('Somma Intent', (conv, params) => {
-	var arg1 = params.arg1;
-	var arg2 = params.arg2;
-	var response = parseInt(arg1) + parseInt(arg2);
-	response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
-	conv.close(response);
-});
 
 const restService = express();
 //restService.use(bodyParser.urlencoded({extended: true}));
 restService.use(bodyParser.json());
-restService.post("/SSG_APP_V2", function (req, res) {
-	var response;
-	// write data to request body
-	console.log("Start APP V2 POST!");
-	var intentName = req.body.queryResult.intent.displayName;
-	console.log("Retrieved Intent name: "+intentName);
-	var session = req.body.session;
-	console.log("Session: "+session);
-	switch(intentName) {
-		case "Somma Intent":
-			console.log("Intent: somma");
-			var arg1 = req.body.queryResult.parameters.arg1;
-			var arg2 = req.body.queryResult.parameters.arg2;
-			response = parseInt(arg1) + parseInt(arg2);
-			response = "La somma di "+arg1+" e "+arg2+" è ugaule a "+response.toString();
-			console.log("Response: "+response);
-			break;
-		case "Blue Prism Controller - Note Spese":
-			console.log("Intent: bp_process_notespese");
-			var username = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.username ?
-				req.body.queryResult.parameters.username :"";
-			buildSoapForBP("NoteSpese",null);
-			//makeRequest(); // Test
-			session = session.toString().substr(session.length-36, session.length);
-			makeAsyncRequestForBP(session);
-			response = "Avviato il processo";
-			console.log("Response: "+response);
-			break;
-		case "Blue Prism Controller - Meteo":
-			console.log("Intent: bp_process_meteo");
-			var dove = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.dove ?
-				req.body.queryResult.parameters.dove : "";
-			var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
-				req.body.queryResult.parameters.quando : "";
-			buildSoapForBP("Meteo",null);
-			//makeRequest(); // Test
-			session = session.toString().substr(session.length-36, session.length);
-			makeAsyncRequestForBP(session);
-			response = "Avviato il processo";
-			console.log("Response: "+response);
-			break;
-		case "Blue Prism Controller - ChromeDriver":
-			console.log("Intent: bp_process_ChromeDriver");
-			//var dove = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.dove ?
-				//req.body.queryResult.parameters.dove : "";
-			//var quando = req.body.queryResult && req.body.queryResult.parameters && req.body.queryResult.parameters.quando ?
-				//req.body.queryResult.parameters.quando : "";
-			buildSoapForBP("ChromeDriverUpdater",null);
-			//makeRequest(); // Test
-			session = session.toString().substr(session.length-36, session.length);
-			makeAsyncRequestForBP(session);
-			response = "Avviato il processo";
-			console.log("Response: "+response);
-			break;
-		default:
-			console.log("Intent DEFAULT: echo");
-			response = req.body.queryResult && req.body.queryResult.parameters &&
-			req.body.queryResult.parameters.echoText
-				? req.body.queryResult.parameters.echoText
-				: "Seems like some problem. Speak again.";
-			console.log("Response: "+response);
-			break;
-	}
-	console.log("End");
-	return res.json({
-		"fulfillmentText": response,
-	});
-});
-restService.post('/fulfillment',app);
 
-restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
+var app_dialogflow = require('./components/dialogflow');
+restService.post('/fulfillment',app_dialogflow);
+
+var app_alexa = require('./components/alexa');
+restService.post('/alexa',app_alexa);
+
+restService.listen(process.env.PORT || 8000, function () {
+	console.log("Server up and listening");
+});
+
+/*restService.post("/ALEXA_SSG_APP_V2", function (req, res) {
 	var response;
 	// write data to request body
 	console.log("Start Alexa APP V2 POST!");
@@ -323,12 +106,7 @@ restService.post("/SSG_APP_V1", function (req, res) {
 		displayText: speech,
 		source: "webhook-echo-sample"
 	});
-});
-	restService.listen(process.env.PORT || 8000, function () {
-	console.log("Server up and listening");
-});
-
-
+});*/
 /*
 restService.post("/audio", function (req, res) {
 	var speech = "";
