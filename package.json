@@ -2,9 +2,9 @@
  "name": "webhook-echo-sample",
  "version": "1.0.0",
  "description": "Webhook echo sample",
- "main": "components/dialogflow.js",
+ "main": "index.js",
  "scripts": {
-  "start": "node components/dialogflow.js"
+  "start": "node index.js"
  },
  "author": "Sunil Syal",
  "dependencies": {
