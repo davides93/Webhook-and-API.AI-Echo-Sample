@@ -110,6 +110,9 @@ const BluePrismControllerChromedriverHandle = {
 			&& Alexa.getIntentName(handlerInput.requestEnvelope) === 'BluePrismControllerChromedriver';
 	},
 	handle(handlerInput) {
+		const filledSlots = handlerInput.requestEnvelope.request.intent.slots;
+		const slotValues = getSlotValues(filledSlots);
+
 		console.log("Retrieved ChromeDriver");
 		buildSoapForBP("ChromeDriverUpdater",null);
 		makeAsyncRequestForBP();
@@ -128,6 +131,9 @@ const BluePrismControllerNoteSpeseHandler = {
 			&& Alexa.getIntentName(handlerInput.requestEnvelope) === 'BluePrismControllerNoteSpese';
 	},
 	handle(handlerInput) {
+		const filledSlots = handlerInput.requestEnvelope.request.intent.slots;
+		const slotValues = getSlotValues(filledSlots);
+
 		console.log("Intent: bp_process_notespese");
 		buildSoapForBP("NoteSpese",null);
 		//makeRequest(); // Test
@@ -147,6 +153,9 @@ const BluePrismControllerMeteoHandler = {
 			&& Alexa.getIntentName(handlerInput.requestEnvelope) === 'BluePrismControllerMeteo';
 	},
 	handle(handlerInput) {
+		const filledSlots = handlerInput.requestEnvelope.request.intent.slots;
+		const slotValues = getSlotValues(filledSlots);
+
 		console.log("Intent: bp_process_meteo");
 		var dove = params.dove ? params.dove : "";
 		var quando = params.quando ? params.quando : "";
@@ -168,6 +177,9 @@ const SommaIntentHandler = {
 			&& Alexa.getIntentName(handlerInput.requestEnvelope) === 'SommaIntent';
 	},
 	handle(handlerInput) {
+		const filledSlots = handlerInput.requestEnvelope.request.intent.slots;
+		const slotValues = getSlotValues(filledSlots);
+
 		var arg1 = params.arg1;
 		var arg2 = params.arg2;
 		var response = parseInt(arg1) + parseInt(arg2);
@@ -183,6 +195,50 @@ const SommaIntentHandler = {
 // payloads to the handlers above. Make sure any new handlers or interceptors you've
 // defined are included below. The order matters - they're processed top to bottom.
 const { ExpressAdapter } = require('ask-sdk-express-adapter');
+
+/* HELPER FUNCTIONS */
+function getSlotValues(filledSlots) {
+	const slotValues = {};
+
+	console.log(`The filled slots: ${JSON.stringify(filledSlots)}`);
+	Object.keys(filledSlots).forEach((item) => {
+		const name = filledSlots[item].name;
+
+		if (filledSlots[item] &&
+			filledSlots[item].resolutions &&
+			filledSlots[item].resolutions.resolutionsPerAuthority[0] &&
+			filledSlots[item].resolutions.resolutionsPerAuthority[0].status &&
+			filledSlots[item].resolutions.resolutionsPerAuthority[0].status.code) {
+			switch (filledSlots[item].resolutions.resolutionsPerAuthority[0].status.code) {
+				case 'ER_SUCCESS_MATCH':
+					slotValues[name] = {
+						synonym: filledSlots[item].value,
+						resolved: filledSlots[item].resolutions.resolutionsPerAuthority[0].values[0].value.name,
+						isValidated: true,
+					};
+					break;
+				case 'ER_SUCCESS_NO_MATCH':
+					slotValues[name] = {
+						synonym: filledSlots[item].value,
+						resolved: filledSlots[item].value,
+						isValidated: false,
+					};
+					break;
+				default:
+					break;
+			}
+		} else {
+			slotValues[name] = {
+				synonym: filledSlots[item].value,
+				resolved: filledSlots[item].value,
+				isValidated: false,
+			};
+		}
+	}, this);
+
+	return slotValues;
+}
+
 const skill = Alexa.SkillBuilders.custom()
 	.addRequestHandlers(
 		LaunchRequestHandler,
@@ -198,7 +254,7 @@ const skill = Alexa.SkillBuilders.custom()
 	)
 	.addErrorHandlers(
 		ErrorHandler,
-	).create();
+	)
+	.create();
 const adapter = new ExpressAdapter(skill, true, true);
-
-module.exports = adapter.getRequestHandlers();
+module.exports = adapter;
