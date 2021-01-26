@@ -1,6 +1,7 @@
 const bp_user = 'admin';
 const bp_pwd = 'admin1';
-const bp_hostname = 'ec2-54-164-220-127.compute-1.amazonaws.com';
+const bp_port = 8182;
+const bp_hostname = 'http://decipher-bp-ey.westeurope.cloudapp.azure.com';
 
 
 var http = require('http');
@@ -91,7 +92,7 @@ module.exports.buildSoapForBP = function buildSoapForBP(processName,dictParam){
 
 	http_options = {
 		hostname: bp_hostname,
-		port: 8181,
+		port: bp_port,
 		path: '/ws/'+processName,
 		method: 'POST',
 		headers: {
@@ -124,6 +125,66 @@ module.exports.makeAsyncRequestForBP = function makeAsyncRequestForBP(){
 
 	soap_req.write(soap_xml);
 	soap_req.end();
+}
+
+
+const { Connection, Request } = require("tedious");
+
+// Create connection to database
+const config = {
+	authentication: {
+		options: {
+			userName: "adminsql", // update me
+			password: "HOPEADMIN2018!" // update me
+		},
+		type: "default"
+	},
+	server: "decipher-bp-ey.westeurope.cloudapp.azure.com", // update me
+	options: {
+		database: "BluePrism", //update me
+		encrypt: true
+	}
+};
+
+module.exports.getRunningProcesses = function getProcesses(){
+	const connection = new Connection(config);
+// Attempt to connect and execute queries if connection goes through
+	connection.on("connect", err => {
+		if (err) {
+			console.error(err.message);
+		} else {
+			queryDatabase();
+		}
+	});
+
+	var request = new Request(
+		`select top 5 name,startdatetime,enddatetime
+		from BPASession s join BPAProcess p on s.processid=p.processid
+		order by startdatetime desc;`, function (err, rowCount, rows) {
+
+		if (err) {
+			console.log(err);
+		} else {
+			console.log(rowCount + ' rows');
+		}
+		console.log(rows) // this is the full array of row objects
+		// it just needs some manipulating
+
+		jsonArray = []
+		rows.forEach(function (columns) {
+			var rowObject ={};
+			columns.forEach(function(column) {
+				rowObject[column.metadata.colName] = column.value;
+				console.log("%s\t%s", column.metadata.colName, column.value);
+			});
+			jsonArray.push(rowObject)
+		});
+		return callback(null, rowCount, jsonArray);
+	});
+
+	var result = connection.execSql(request);
+	connection.close();
+	return result;
 }
 
 function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }

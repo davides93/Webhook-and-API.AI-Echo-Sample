@@ -25,6 +25,7 @@
   "restify": "^7.6.0",
   "ssml-builder": "^0.4.3",
   "xmlhttprequest": "^1.8.0",
-  "winser": "^1.0.3"
+  "winser": "^1.0.3",
+  "tedious": "^11.0.1"
  }
 }

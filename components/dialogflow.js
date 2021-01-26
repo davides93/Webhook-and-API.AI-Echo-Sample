@@ -14,7 +14,7 @@ const app = dialogflow({
 
 const {buildSoapForBP, makeAsyncRequestForBP} = require("../util/util_bp");
 
-app.intent('Blue Prism Controller - ChromeDriver', (conv) => {
+app.intent('BluePrismControllerIntent.ChromeDriver', (conv) => {
 	console.log("Retrieved ChromeDriver");
 	buildSoapForBP("ChromeDriverUpdater",null);
 	makeAsyncRequestForBP();
@@ -23,21 +23,22 @@ app.intent('Blue Prism Controller - ChromeDriver', (conv) => {
 	conv.close(response);
 });
 
-app.intent('Blue Prism Controller - Note Spese', (conv) => {
-	console.log("Intent: bp_process_notespese");
-	buildSoapForBP("NoteSpese",null);
+app.intent('BluePrismControllerIntent.PrezziOfferte', (conv) => {
+	console.log("Intent: bp_process_PrezziOfferte");
+	buildSoapForBP("PrezziOfferteFase1Elettrico",null);
 	//makeRequest(); // Test
 	makeAsyncRequestForBP();
 	var response = "Avviato il processo";
 	console.log("Response: "+response);
+	conv.ask(response);
 	conv.close(response);
 });
 
-app.intent('Blue Prism Controller - Meteo', (conv, params) => {
-	console.log("Intent: bp_process_meteo");
+app.intent('BluePrismControllerIntent.ScaricoPortali', (conv, params) => {
+	console.log("Intent: bp_process_ScaricoPortali");
 	var dove = params.dove ? params.dove : "";
 	var quando = params.quando ? params.quando : "";
-	buildSoapForBP("Meteo",null);
+	buildSoapForBP("OPERFPScaricoPortaliACEA",null);
 	//makeRequest(); // Test
 	makeAsyncRequestForBP();
 	var response = "Avviato il processo";
