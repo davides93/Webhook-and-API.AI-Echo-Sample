@@ -11,7 +11,7 @@ var app_dialogflow = require('./components/dialogflow');
 restService.post('/fulfillment',app_dialogflow);
 
 var app_alexa = require('./components/alexa');
-restService.post('/alexa',app_alexa.getRequestHandlers());
+restService.post('/alexa',app_alexa);
 
 restService.listen(process.env.PORT || 8000, function () {
 	console.log("Server up and listening");

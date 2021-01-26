@@ -257,4 +257,4 @@ const skill = Alexa.SkillBuilders.custom()
 	)
 	.create();
 const adapter = new ExpressAdapter(skill, true, true);
-module.exports = adapter;
+module.exports = adapter.getRequestHandlers();
